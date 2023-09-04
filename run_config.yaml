@@ -1,0 +1,92 @@
+GAMMA: 0.95
+MODEL_PATH: E:\Summer Research 2023\MADDPG_New\MADDPG\model\map3_converge\lowest_step-213.pth
+actor_lr: 0.0001
+batch_size: 60
+color:
+  fog: 255
+  free: 0
+  obstacle: 100
+  others: 150
+  self: 200
+  uncertain: 50
+comm_mode: LC
+critic_lr: 0.001
+default_robot:
+  commRange: 60
+  resetRandomPose: 0
+  resolution: 0.1
+  robotRadius: 1
+  startPose:
+    x: 61
+    y: 61
+  syncRange: 20
+  w1: 2.0e-05
+  w2: 0.001
+  w3: 0.1
+done_expoloration: 0.95
+e_render: true
+episodes_before_train: 60
+frontiers:
+  number: 8
+hyperparams:
+  alpha1: 0.01
+  alpha2: 0.01
+json_dir: /../HouseExpo/json
+load_model: false
+map:
+  x: 150
+  y: 150
+map_id_eval_set: /../assets/map_3.txt
+map_id_train_set: /../assets/map_3.txt
+max_steps: 50
+model_save_eps: 10
+n_episode: 500
+png_dir: /../assets/png
+robots:
+  commRange: 60
+  number: 5
+  robot1:
+    color: 10
+    laser:
+      fov: 60
+      range: 30
+      resolution: 0.1
+    resetRandomPose: 0
+    robotRadius: 1
+    startPose:
+      x: 61
+      y: 61
+  robot2: &id001
+    color: 59.0
+    laser:
+      fov: 5
+      range: 30
+      resolution: 0.1
+    resetRandomPose: 0
+    robotRadius: 1
+    startPose:
+      x: 61
+      y: 61
+  robot3: *id001
+  robot4: *id001
+  robot5:
+    color: 206.0
+    laser:
+      fov: 5
+      range: 10
+      resolution: 0.1
+    resetRandomPose: 0
+    robotRadius: 1
+    startPose:
+      x: 61
+      y: 61
+  syncRange: 20
+  w1: 2.0e-05
+  w2: 0.001
+  w3: 0.1
+stateSize:
+  x: 145
+  y: 145
+tau: 0.01
+temperature: 1.0
+test: false
