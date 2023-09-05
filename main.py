@@ -19,9 +19,11 @@ from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 import matplotlib.pyplot as plt
 import random
+import subprocess
 
 np.random.seed(2609)
 random.seed(2609)
+interpreter_path = "C:/Users/Daniel Yin/AppData/Local/Programs/Python/Python39/python.exe"
 
 
 def cost_function(q):
@@ -199,6 +201,7 @@ if __name__ == "__main__":
         {'N1': 0, 'N2': 2, 'N3': 0, 'N4': 2, 'target': black_box_function(0, 2, 0, 2)},  # prior 5
     ]
 
+    # for i in range(2):
     count = 1
 
     while count <= budget:
@@ -283,3 +286,18 @@ if __name__ == "__main__":
     # Write the data to the JSON file
     with open(file_path, 'w') as file:
         json.dump(best_crew.tolist(), file)
+
+    result = subprocess.run([interpreter_path, "exploration_initializer.py",
+                             "E:\Summer Research 2023\BO_to_MADDPG\BO_to_MADDPG\BOOF_best_crew.json", "E:\Summer Research 2023\BO_to_MADDPG\BO_to_MADDPG\base_config.yaml", "E:\Summer Research 2023\MADDPG_New\MADDPG\assets\test_run_config.yaml", "E:\Summer Research 2023\MADDPG_New\MADDPG\ "], check=True, cwd=os.getcwd(),
+                            stdout=subprocess.PIPE, text=True, encoding='utf-8')
+    result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
+
+    new_data = {
+        'N1': max_crew[0],
+        'N2': max_crew[1],
+        'N3': max_crew[2],
+        'N4': max_crew[3],
+        'target': result  # Adjust the arguments as necessary
+    }
+    priors.append(new_data)
+    print(priors)
