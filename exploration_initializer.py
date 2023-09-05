@@ -13,8 +13,10 @@ low_range = 10
 num_robots = 0
 robots = {}
 
-interpreter_path =  "E:/Summer Research 2023/DME-DRL Daniel/DME_DRL_CO/venv/Scripts/python.exe"
-working_directory = "E:/Summer Research 2023/MADDPG_New/MADDPG/src/"
+# interpreter_path = "E:/Summer Research 2023/DME-DRL Daniel/DME_DRL_CO/venv/Scripts/python.exe"
+working_directory = "D:/2023 Summer/MADDPG/src"
+interpreter_path = "C:/Users/Daniel Yin/AppData/Local/Programs/Python/Python39/python.exe"
+
 def split_range(start, end, segment_size):
     segments = []
     current = start
