@@ -33,11 +33,10 @@ if len(sys.argv) < 5:
 json_file_path = os.path.abspath(sys.argv[1])
 base_config_yaml_file_path = os.path.abspath(sys.argv[2])
 run_config_yaml_file_path = os.path.abspath(sys.argv[3])
-run_exploration_folder_path = os.path.abspath(sys.argv[4])
 run_config_file_yaml_name = os.path.basename(run_config_yaml_file_path)
 
 print(run_config_yaml_file_path)
-print(run_exploration_folder_path)
+
 try:
     with open(json_file_path, 'r') as json_file:
         best_crew = json.load(json_file)
@@ -119,7 +118,7 @@ with open(run_config_yaml_file_path, 'w') as yaml_file:
     yaml.dump(base_config, yaml_file)
 
 try:
-    result = subprocess.run([interpreter_path, f'{run_exploration_folder_path}/src/main.py', run_config_file_yaml_name], check=True, cwd=working_directory, stdout=subprocess.PIPE, text=True, encoding='utf-8')
+    result = subprocess.run([interpreter_path, f'{working_directory}/main.py', run_config_file_yaml_name], check=True, cwd=working_directory, stdout=subprocess.PIPE, text=True, encoding='utf-8')
     result = result.stdout.splitlines()[-1] # The standard output of the subprocess
     print(result)
     # Print or use the captured information as needed
