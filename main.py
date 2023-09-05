@@ -23,7 +23,13 @@ import subprocess
 
 np.random.seed(2609)
 random.seed(2609)
-interpreter_path = "C:/Users/Daniel Yin/AppData/Local/Programs/Python/Python39/python.exe"
+# interpreter_path = "C:/Users/Daniel Yin/AppData/Local/Programs/Python/Python39/python.exe"
+interpreter_path = "E:/Summer Research 2023/DME-DRL Daniel/DME_DRL_CO/venv/Scripts/python.exe "
+best_crew_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/BOOF_best_crew.json "
+base_config_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/base_config.yaml "
+test_run_config_path = "E:/Summer Research 2023/MADDPG_New/MADDPG/assets/test_run_config.yaml"
+
+
 
 
 def cost_function(q):
@@ -131,7 +137,7 @@ class CostProblem(Problem):
 
 
 # Problem Hiperparameters
-budget = 5
+budget = 2
 satisfaction_dict = {}  # Dictionary to store satisfaction values for each unique crew
 satisfaction_lower_bound = 0
 satisfaction_upper_bound = 750  # 150 * 5
@@ -284,14 +290,18 @@ if __name__ == "__main__":
 
     best_crew = np.array(best_crew)
     # Write the data to the JSON file
+    result = ""
     with open(file_path, 'w') as file:
         json.dump(best_crew.tolist(), file)
-
-    result = subprocess.run([interpreter_path, "exploration_initializer.py",
-                             "E:\Summer Research 2023\BO_to_MADDPG\BO_to_MADDPG\BOOF_best_crew.json", "E:\Summer Research 2023\BO_to_MADDPG\BO_to_MADDPG\base_config.yaml", "E:\Summer Research 2023\MADDPG_New\MADDPG\assets\test_run_config.yaml", "E:\Summer Research 2023\MADDPG_New\MADDPG\ "], check=True, cwd=os.getcwd(),
-                            stdout=subprocess.PIPE, text=True, encoding='utf-8')
-    result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
-
+    try:
+        result = subprocess.run([interpreter_path, 'exploration_initializer.py',
+                                 best_crew_path , base_config_path , test_run_config_path], check=True, cwd=os.getcwd(),
+                                stdout=subprocess.PIPE, text=True, encoding='utf-8')
+        result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
+        # Now 'result' is properly defined within the try block
+    except subprocess.CalledProcessError as e:
+        print(f"Error running exploration script_path: {e}")
+        raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
     new_data = {
         'N1': max_crew[0],
         'N2': max_crew[1],
