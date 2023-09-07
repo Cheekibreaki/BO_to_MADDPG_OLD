@@ -8,7 +8,8 @@ import subprocess
 
 
 # working_directory = "D:/2023 Summer/MADDPG/src"
-working_directory = "E:/Summer Research 2023/MADDPG_New/MADDPG/src/"
+multi_agent_working_directory = "E:/Summer Research 2023/MADDPG_New/MADDPG/src/"
+single_agent_working_directory = "E:/Summer Research 2023/MADDPG_single_agent/MADDPG/src/"
 # interpreter_path = "C:/Users/Daniel Yin/AppData/Local/Programs/Python/Python39/python.exe"
 interpreter_path = "E:/Summer Research 2023/DME-DRL Daniel/DME_DRL_CO/venv/Scripts/python.exe"
 
@@ -130,9 +131,16 @@ def main():
         yaml.dump(base_config, yaml_file)
 
     try:
-        result = subprocess.run([interpreter_path, f'{working_directory}/main.py', run_config_file_yaml_name], check=True, cwd=working_directory, stdout=subprocess.PIPE, text=True, encoding='utf-8')
-        result = result.stdout.splitlines()[-1] # The standard output of the subprocess
-        print(result)
+        if(robot_index == 1):
+            result = subprocess.run(
+                [interpreter_path, f'{single_agent_working_directory}/main.py', run_config_file_yaml_name], check=True,
+                cwd=single_agent_working_directory, stdout=subprocess.PIPE, text=True, encoding='utf-8')
+            result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
+            print(result)
+        else:
+            result = subprocess.run([interpreter_path, f'{multi_agent_working_directory}/main.py', run_config_file_yaml_name], check=True, cwd=multi_agent_working_directory, stdout=subprocess.PIPE, text=True, encoding='utf-8')
+            result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
+            print(result)
         # Print or use the captured information as needed
 
 
