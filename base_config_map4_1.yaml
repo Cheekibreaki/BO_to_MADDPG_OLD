@@ -1,8 +1,11 @@
+# cache file setting
+cache_file_path: ./cache/base_map4_config1_cache.json
+
 # world settings
 json_dir: /../HouseExpo/json
 png_dir: /../assets/png
-map_id_train_set: /../assets/map_3.txt
-map_id_eval_set: /../assets/map_3.txt
+map_id_train_set: /../assets/map_4.txt
+map_id_eval_set: /../assets/map_4.txt
 
 # [GC,LC,NC]
 comm_mode: LC
@@ -36,8 +39,42 @@ default_robot:
   resetRandomPose: 0
   "resolution": 0.1
   startPose:
-    x: 61
-    y: 61
+    robot1:
+      x: 100
+      y: 140
+    robot2:
+      x: 70
+      y: 8
+    robot3:
+      x: 139
+      y: 87
+    robot4:
+      x: 20
+      y: 50
+    robot5:
+      x: 60
+      y: 115
+    robot6:
+      x: 40
+      y: 80
+    robot7:
+      x: 110
+      y: 80
+    robot8:
+      x: 60
+      y: 60
+    robot9:
+      x: 100
+      y: 80
+    robot10:
+      x: 100
+      y: 40
+    robot11:
+      x: 140
+      y: 40
+    robot12:
+      x: 80
+      y: 80
   w1: 0.00002
   w2: 0.001
   w3: 0.1
