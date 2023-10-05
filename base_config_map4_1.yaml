@@ -13,16 +13,16 @@ comm_mode: LC
 # model-related hyperparam
 done_expoloration: 0.95
 test: False
-e_render : True
+e_render : False
 load_model: False
 MODEL_PATH: 'E:\Summer Research 2023\MADDPG_New\MADDPG\model\map3_converge\lowest_step-213.pth'
 #MODEL_PATH: ''
 #MODEL_PATH: 'E:\Summer Research 2023\MADDPG\MADDPG\model\2023_08_17_22_31_45\lowest_step-13.pth'
-batch_size: 2
-n_episode: 3
+batch_size: 60
+n_episode: 300
 max_steps: 50
-episodes_before_train: 2
-model_save_eps: 2
+episodes_before_train: 60
+model_save_eps: 300
 temperature: 1.0
 
 GAMMA: 0.95
@@ -33,8 +33,8 @@ actor_lr: 0.0001
 # robots settings
 default_robot:
 
-  commRange: 60
-  syncRange: 20
+  commRange: 200
+  syncRange: 200
   robotRadius: 1
   resetRandomPose: 0
   "resolution": 0.1

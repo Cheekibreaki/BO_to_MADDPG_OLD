@@ -42,8 +42,24 @@ def main():
 
     json_file_path = os.path.abspath(sys.argv[1])
     base_config_yaml_file_path = os.path.abspath(sys.argv[2])
-    run_config_yaml_file_path = os.path.abspath(sys.argv[3])
-    run_config_file_yaml_name = os.path.basename(run_config_yaml_file_path)
+    run_config_yaml_folder_path = os.path.abspath(sys.argv[3])
+
+    try:
+        with open(json_file_path, 'r') as json_file:
+            best_crew = json.load(json_file)
+    except FileNotFoundError:
+        print(f"File not found: {json_file_path}")
+        sys.exit(1)
+    except json.JSONDecodeError:
+        print(f"Invalid JSON file: {json_file_path}")
+        sys.exit(1)
+
+    # Assuming best_crew is a list/tuple with at least 4 elements
+    run_config_file_yaml_name = "config_{}.yaml".format(''.join(map(str, best_crew[:4])))
+
+    # Construct the full path and then get the basename
+    run_config_yaml_file_path = os.path.join(run_config_yaml_folder_path, run_config_file_yaml_name)
+
 
     with open(base_config_yaml_file_path, "r") as yaml_file:
         try:
@@ -61,17 +77,10 @@ def main():
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+    if not os.path.exists(cache_file_path):
+        with open(cache_file_path, 'w') as file:
+            json.dump([], file)
 
-    try:
-        with open(json_file_path, 'r') as json_file:
-            best_crew = json.load(json_file)
-            # best_crew = [0,1,1,0]
-    except FileNotFoundError:
-        print(f"File not found: {json_file_path}")
-        sys.exit(1)
-    except json.JSONDecodeError:
-        print(f"Invalid JSON file: {json_file_path}")
-        sys.exit(1)
 
     with open(cache_file_path, 'r') as file:
         data = json.load(file)
@@ -80,7 +89,6 @@ def main():
     for entry in data:
         if entry['list'] == best_crew:
             print(entry['value'])
-
             return
     else:
         print(f"The list {best_crew} was not found in the JSON data.")
@@ -158,12 +166,12 @@ def main():
     try:
         if(robot_index == 1):
             result = subprocess.run(
-                [interpreter_path, f'{single_agent_working_directory}/main.py', run_config_file_yaml_name], check=True,
+                [interpreter_path, f'{single_agent_working_directory}/main.py', './BO_TO_MADDPG/'+run_config_file_yaml_name], check=True,
                 cwd=single_agent_working_directory, stdout=subprocess.PIPE, text=True, encoding='utf-8')
             result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
             print(result)
         else:
-            result = subprocess.run([interpreter_path, f'{multi_agent_working_directory}/main.py', run_config_file_yaml_name], check=True, cwd=multi_agent_working_directory, stdout=subprocess.PIPE, text=True, encoding='utf-8')
+            result = subprocess.run([interpreter_path, f'{multi_agent_working_directory}/main.py', './BO_TO_MADDPG/'+run_config_file_yaml_name], check=True, cwd=multi_agent_working_directory, stdout=subprocess.PIPE, text=True, encoding='utf-8')
             result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
             print(result)
         # Print or use the captured information as needed
@@ -174,16 +182,20 @@ def main():
     except subprocess.CalledProcessError as e:
         print(f"Error running exploration script_path: {e}")
 
-    new_data = [{"list": best_crew, "value": result}]
+    new_data = {"list": best_crew, "value": result}
 
     try:
         with open(cache_file_path, 'r') as file:
             data = json.load(file)
+            if not isinstance(data, list):  # Ensure data is a list
+                data = []
     except (FileNotFoundError, json.JSONDecodeError):  # Handle case where file doesn't exist or is empty/malformed
         data = []
 
+
+
     # Append the new data
-    data.extend(new_data)
+    data.append(new_data)
 
     # Write the updated data back to the JSON file
     with open(cache_file_path, 'w') as file:
