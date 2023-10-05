@@ -289,7 +289,6 @@ if __name__ == "__main__":
         best_objectives = res.F[best_index]
 
         # Evaluate the black-box function for the best_solution
-        # TODO: require subprocess here for the best crew
         # best_performance = black_box_function(best_solution[0], best_solution[1], best_solution[2], best_solution[3])
         best_cost = cost_function(list(best_solution))
 
