@@ -59,18 +59,18 @@ class MySampling(Sampling):
 
 def cost_function(q):
     # Fixed costs for each feature level
-    cost_low_low = 50
-    cost_high_low = 100
-    cost_low_high = 75
-    cost_high_high = 150
+    cost_low_low = 10
+    cost_high_low = 45
+    cost_low_high = 50
+    cost_high_high = 80
 
     if isinstance(q, list):
-        total_cost = q[0] * cost_low_low + q[1] * cost_high_low + q[2] * cost_low_high + q[3] * cost_high_high
+        total_cost = q[0] * cost_high_high + q[1] * cost_high_low + q[2] * cost_low_high + q[3] * cost_low_low
 
     else:
         # Calculate the total cost of the crew
-        total_cost = q[:, 0] * cost_low_low + q[:, 1] * cost_high_low + q[:, 2] * cost_low_high + q[:,
-                                                                                                  3] * cost_high_high
+        total_cost = q[:, 0] * cost_high_high + q[:, 1] * cost_high_low + q[:, 2] * cost_low_high + q[:,
+                                                                                                  3] * cost_low_low
 
     return total_cost
 
