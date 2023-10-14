@@ -22,14 +22,14 @@ import random
 from pymoo.core.callback import Callback
 from pymoo.core.sampling import Sampling
 import subprocess
-
+worst_performance = float('10000000')
 np.random.seed(2609)
 random.seed(2609)
 # interpreter_path = "C:/Users/Daniel Yin/AppData/Local/Programs/Python/Python39/python.exe"
 interpreter_path = "E:/Summer Research 2023/DME-DRL Daniel/DME_DRL_CO/venv/Scripts/python.exe "
 best_crew_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/BOOF_best_crew.json "
 base_config_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/base_config_map4_1.yaml "
-test_run_config_path = "E:/Summer Research 2023/MADDPG_New/MADDPG/assets/test_run_config.yaml"
+test_run_config_path = "E:/Summer Research 2023/MADDPG_New/MADDPG/assets/BO_TO_MADDPG/"
 
 
 class MySampling(Sampling):
@@ -59,10 +59,13 @@ class MySampling(Sampling):
 
 def cost_function(q):
     # Fixed costs for each feature level
-    cost_low_low = 10
+
+
+    cost_high_high = 80
     cost_high_low = 45
     cost_low_high = 50
-    cost_high_high = 80
+    cost_low_low = 10
+
 
     if isinstance(q, list):
         total_cost = q[0] * cost_high_high + q[1] * cost_high_low + q[2] * cost_low_high + q[3] * cost_low_low
@@ -70,64 +73,22 @@ def cost_function(q):
     else:
         # Calculate the total cost of the crew
         total_cost = q[:, 0] * cost_high_high + q[:, 1] * cost_high_low + q[:, 2] * cost_low_high + q[:,
-                                                                                                  3] * cost_low_low
+                                                                                                         3] * cost_low_low
 
     return total_cost
 
 
-def get_random_satisfaction(crew):
-    # Check if the satisfaction for the crew is already in the dictionary
-    if tuple(crew) in satisfaction_dict:
-        return satisfaction_dict[tuple(crew)]
-    else:
-        # Generate a random satisfaction value between 0 and 100
-        satisfaction = random.uniform(satisfaction_lower_bound, satisfaction_upper_bound)
-        # Store the satisfaction value in the dictionary for future use
-        satisfaction_dict[tuple(crew)] = satisfaction
-        return satisfaction
 
 
-def generate_all_crews():
-    crews = []
-    # Loop through all possible combinations of quantities for each feature level
-    for q_low_low in range(4):
-        for q_high_low in range(4):
-            for q_low_high in range(4):
-                for q_high_high in range(4):
-                    crew = [q_low_low, q_high_low, q_low_high, q_high_high]
-                    crews.append(crew)
-    return crews
 
 
-def generate_satisfaction_for_all_crews():
-    crews = generate_all_crews()
-    for crew in crews:
-        get_random_satisfaction(crew)
 
 
-def max_satisfaction():
-    crews = generate_all_crews()
-    max_value = float('inf')  # Initialize to negative infinity
-    best_crew = None
-    for crew in crews:
-        satisfaction_utility = black_box_function(crew[0], crew[1], crew[2], crew[3]) + cost_function(crew)
-        if satisfaction_utility < max_value:
-            max_value = satisfaction_utility
-            best_crew = crew
-
-    return max_value, best_crew
 
 
-# define the black box function
-def black_box_function(q_low_low, q_high_low, q_low_high, q_high_high):
-    # Get the random satisfaction value for the crew
-    satisfaction = get_random_satisfaction([q_low_low, q_high_low, q_low_high, q_high_high])
 
-    # if q_low_low==0 and q_high_low==0 and q_low_high==0 and q_high_high ==0:
 
-    #   satisfaction = 0
-    #   print('0 VALUES, satisfaction', satisfaction)
-    return -1 * satisfaction
+
 
 
 # Exploration factor kappa
@@ -210,15 +171,14 @@ def call_initializaer(solution):
     return new_data, result
 
 
-budget = 10
+budget = 30
 satisfaction_dict = {}  # Dictionary to store satisfaction values for each unique crew
 satisfaction_lower_bound = 0
 satisfaction_upper_bound = 750  # 150 * 5
 
 if __name__ == "__main__":
 
-    # Generate satisfaction values for all 1364 different crews
-    generate_satisfaction_for_all_crews()
+
 
     # Generate discrete and linear space
     # Define the search space for the categorical variables N1, N2, N3, and N4
@@ -232,11 +192,11 @@ if __name__ == "__main__":
 
     # Initial Priors
     priors = [
-        {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': black_box_function(2, 0, 0, 3)},  # Prior 1
-        {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(0, 3, 3, 0)},  # Prior 2
-        {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': black_box_function(1, 1, 1, 2)},  # Prior 3
-        {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(3, 2, 2, 1)},  # prior 4
-        {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': black_box_function(3, 1, 3, 1)},  # prior 5
+        {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': 417.7},  # Prior 1
+        {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': 602.4},  # Prior 2
+        {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': 507.6},  # Prior 3
+        {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': 232.80},  # prior 4
+        {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': 201.80},  # prior 5
     ]
     count = 1
 
@@ -257,7 +217,9 @@ if __name__ == "__main__":
 
         # Prepare the data for Gaussian process regression
         P = np.array([[p['N1'], p['N2'], p['N3'], p['N4']] for p in priors])
+
         Z = np.array([p['target'] for p in priors])
+        Z = np.array([float(p) for p in Z])
 
         # Fit the Gaussian process regressor
         regressor.fit(P, Z)
@@ -292,19 +254,31 @@ if __name__ == "__main__":
         # best_performance = black_box_function(best_solution[0], best_solution[1], best_solution[2], best_solution[3])
         best_cost = cost_function(list(best_solution))
 
-        # Append the best_solution and its performance to the list of priors
-        best_prior, best_performance = call_initializaer(best_solution)
+        if np.array_equal(best_solution, [0,0,0,0]):
+            best_prior = {'N1': 0, 'N2': 0, 'N3': 0, 'N4': 0, 'target': worst_performance}
+            best_performance = worst_performance
+        else:
+            # Append the best_solution and its performance to the list of priors
+            best_prior, best_performance = call_initializaer(best_solution)
 
+        # Append the best_solution and its performance to the list of priors
+
+        print("best_prior",best_prior)
         priors.append(best_prior)
-        print("Point suggestion : {}, value: {}".format(best_solution, best_performance + best_cost))
+        print(f"Point suggestion: {str(best_solution)}, value: {str(float(best_performance) + best_cost)}")
         count += 1
 
-    visited_performance = np.array([p['target'] for p in priors])
+    visited_performance = np.array([float(p['target']) for p in priors])
     visited_crews = np.array([[p['N1'], p['N2'], p['N3'], p['N4']] for p in priors])
-    visited_utility = visited_performance + cost_function(visited_crews)
+    visited_cost = np.array([cost_function(list(visited_crew))  for visited_crew in visited_crews])
+
+    print("visited_crews",visited_crews)
+    print('visited_performance',visited_performance)
+    print("visited_cost", visited_cost)
+
+    visited_utility = visited_performance + visited_cost
+    print('visited_utility',visited_utility)
     best_visited_utility = np.argmin(visited_utility)
     best_crew = visited_crews[best_visited_utility]
     print("Best point suggestion : {}, value: {}".format(best_crew, np.min(visited_utility)))
-    max_utility, max_crew = max_satisfaction()
-    print("The best crew is [{}, {}, {}, {}], the max value is {}".format(max_crew[0], max_crew[1], max_crew[2],
-                                                                          max_crew[3], max_utility))
+

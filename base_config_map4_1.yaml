@@ -17,13 +17,15 @@ e_render : False
 load_model: False
 MODEL_PATH: 'E:\Summer Research 2023\MADDPG_New\MADDPG\model\map3_converge\lowest_step-213.pth'
 #MODEL_PATH: ''
-#MODEL_PATH: 'E:\Summer Research 2023\MADDPG\MADDPG\model\2023_08_17_22_31_45\lowest_step-13.pth'
 batch_size: 60
 n_episode: 300
 max_steps: 50
 episodes_before_train: 60
 model_save_eps: 300
 temperature: 1.0
+
+
+
 
 GAMMA: 0.95
 tau: 0.01
