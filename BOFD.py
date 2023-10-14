@@ -78,19 +78,6 @@ def cost_function(q):
     return total_cost
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Exploration factor kappa
 def dynamic_delta(num_priors, initial_delta, scaling_factor):
     delta = initial_delta / (1 + scaling_factor * num_priors)
@@ -144,7 +131,7 @@ class MyCallback(Callback):
 
 
 # subprocess call
-def call_initializaer(solution):
+def call_initializer(solution):
     # Specify the file path
     file_path = os.getcwd() + '/BOFD_best_crew.json'
 
@@ -161,6 +148,7 @@ def call_initializaer(solution):
     except subprocess.CalledProcessError as e:
         print(f"Error running exploration script_path: {e}")
         raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+
     new_data = {
         'N1': solution[0],
         'N2': solution[1],
@@ -168,7 +156,31 @@ def call_initializaer(solution):
         'N4': solution[3],
         'target': result  # Adjust the arguments as necessary
     }
+
     return new_data, result
+
+
+def black_box_function(N1, N2, N3, N4):
+    # Convert the N values into a list and then into a string for passing to subprocess
+    values_as_list = [N1, N2, N3, N4]
+    file_path = os.getcwd() + '/priors.json'
+    # print("values_as_list", values_as_list)
+
+    crew = np.array(values_as_list)
+    # Write the data to the JSON file
+    with open(file_path, 'w') as file:
+        json.dump(crew.tolist(), file)
+    try:
+        result = subprocess.run([interpreter_path, 'exploration_initializer.py',
+                                 file_path, base_config_path, test_run_config_path], check=True, cwd=os.getcwd(),
+                                stdout=subprocess.PIPE, text=True, encoding='utf-8')
+        result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
+        # Now 'result' is properly defined within the try block
+    except subprocess.CalledProcessError as e:
+        print(f"Error running exploration script_path: {e}")
+        raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
+
+    return result
 
 
 budget = 30
@@ -177,9 +189,6 @@ satisfaction_lower_bound = 0
 satisfaction_upper_bound = 750  # 150 * 5
 
 if __name__ == "__main__":
-
-
-
     # Generate discrete and linear space
     # Define the search space for the categorical variables N1, N2, N3, and N4
     N_space = [0, 1, 2, 3]
@@ -190,14 +199,15 @@ if __name__ == "__main__":
         grid_points.append([N1, N2, N3, N4])
     grid_points = np.array(grid_points)
 
-    # Initial Priors
     priors = [
-        {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': 417.7},  # Prior 1
-        {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': 602.4},  # Prior 2
-        {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': 507.6},  # Prior 3
-        {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': 232.80},  # prior 4
-        {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': 201.80},  # prior 5
+        {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': black_box_function(2, 0, 0, 3)},  # Prior 1
+        {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(0, 3, 3, 0)},  # Prior 2
+        {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': black_box_function(1, 1, 1, 2)},  # Prior 3
+        {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(3, 2, 2, 1)},  # prior 4
+        {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': black_box_function(3, 1, 3, 1)},  # prior 5
     ]
+    # print("Priors:", priors)
+
     count = 1
 
     while count <= budget:
@@ -254,12 +264,12 @@ if __name__ == "__main__":
         # best_performance = black_box_function(best_solution[0], best_solution[1], best_solution[2], best_solution[3])
         best_cost = cost_function(list(best_solution))
 
-        if np.array_equal(best_solution, [0,0,0,0]):
+        if np.array_equal(best_solution, [0, 0, 0, 0]):
             best_prior = {'N1': 0, 'N2': 0, 'N3': 0, 'N4': 0, 'target': worst_performance}
             best_performance = worst_performance
         else:
             # Append the best_solution and its performance to the list of priors
-            best_prior, best_performance = call_initializaer(best_solution)
+            best_prior, best_performance = call_initializer(best_solution)
 
         # Append the best_solution and its performance to the list of priors
 
