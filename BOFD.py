@@ -199,21 +199,21 @@ if __name__ == "__main__":
         grid_points.append([N1, N2, N3, N4])
     grid_points = np.array(grid_points)
 
-    # priors = [
-    #     {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': black_box_function(2, 0, 0, 3)},  # Prior 1
-    #     {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(0, 3, 3, 0)},  # Prior 2
-    #     {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': black_box_function(1, 1, 1, 2)},  # Prior 3
-    #     {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(3, 2, 2, 1)},  # prior 4
-    #     {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': black_box_function(3, 1, 3, 1)},  # prior 5
-    # ]
-
     priors = [
-        {'N1': 0, 'N2': 1, 'N3': 1, 'N4': 3, 'target': black_box_function(0, 1, 1, 3)},  # Prior 1
-        {'N1': 2, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(2, 2, 2, 1)},  # Prior 2
-        {'N1': 3, 'N2': 0, 'N3': 0, 'N4': 2, 'target': black_box_function(3, 0, 0, 2)},  # Prior 3
-        {'N1': 1, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(1, 3, 3, 0)},  # prior 4
-        {'N1': 1, 'N2': 0, 'N3': 2, 'N4': 0, 'target': black_box_function(1, 0, 2, 0)},  # prior 5
+        {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': black_box_function(2, 0, 0, 3)},  # Prior 1
+        {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(0, 3, 3, 0)},  # Prior 2
+        {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': black_box_function(1, 1, 1, 2)},  # Prior 3
+        {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(3, 2, 2, 1)},  # prior 4
+        {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': black_box_function(3, 1, 3, 1)},  # prior 5
     ]
+
+    # priors = [
+    #     {'N1': 0, 'N2': 1, 'N3': 1, 'N4': 3, 'target': black_box_function(0, 1, 1, 3)},  # Prior 1
+    #     {'N1': 2, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(2, 2, 2, 1)},  # Prior 2
+    #     {'N1': 3, 'N2': 0, 'N3': 0, 'N4': 2, 'target': black_box_function(3, 0, 0, 2)},  # Prior 3
+    #     {'N1': 1, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(1, 3, 3, 0)},  # prior 4
+    #     {'N1': 1, 'N2': 0, 'N3': 2, 'N4': 0, 'target': black_box_function(1, 0, 2, 0)},  # prior 5
+    # ]
     # print("Priors:", priors)
 
     count = 1
@@ -294,9 +294,62 @@ if __name__ == "__main__":
     print('visited_performance',visited_performance)
     print("visited_cost", visited_cost)
 
+
+    # Convert visited_crews array to a list of strings to use as x-axis ticks
+    x_data = [' '.join(map(str, crew)) for crew in visited_crews]
+
+    # Create an array of indices for x-axis positioning
+    x_indices = np.arange(len(x_data))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Scatter plot
+    ax.scatter(x_indices, visited_performance, visited_cost, c='r', marker='o')
+
+    # Setting x-ticks
+    ax.set_xticks(x_indices)
+    ax.set_xticklabels(x_data, rotation=45, fontsize = 8)  # Rotate for readability
+    plt.title("BOFD Result")
+    ax.set_xlabel('Crew Combinations')
+    ax.set_ylabel('Total Time')
+    ax.set_zlabel('Cost')
+    plt.ylim(0,2000);
+    plt.tight_layout()
+
+
     visited_utility = visited_performance + visited_cost
     print('visited_utility',visited_utility)
     best_visited_utility = np.argmin(visited_utility)
     best_crew = visited_crews[best_visited_utility]
-    print("Best point suggestion : {}, value: {}".format(best_crew, np.min(visited_utility)))
+    print("Best point suggestion : {}, iteration {}, value: {}".format(best_crew, best_visited_utility, np.min(visited_utility)))
+
+    plt.show()
+
+    # Convert visited_crews array to a list of strings to use as x-axis ticks
+    x_data = [' '.join(map(str, crew)) for crew in visited_crews]
+
+    # Create an array of indices for x-axis positioning
+    x_indices = np.arange(len(x_data))
+
+    # First 2D graph: Crew Combinations vs Performance + Cost
+    plt.figure(figsize=(10, 5))
+    plt.bar(x_indices, visited_performance, color='blue')
+    plt.xticks(x_indices, x_data, rotation=45, fontsize=8)
+    plt.ylabel('Total Time')
+    plt.xlabel('Crew Combinations')
+    plt.tight_layout()
+    plt.ylim(0, 2000);
+    plt.title("BOFD Total Time")
+    plt.show()
+
+    # Second 2D graph: Crew Combinations vs Cost
+    plt.figure(figsize=(10, 5))
+    plt.bar(x_indices, visited_cost, color='green')
+    plt.xticks(x_indices, x_data, rotation=45, fontsize=8)
+    plt.ylabel('Cost')
+    plt.xlabel('Crew Combinations')
+    plt.tight_layout()
+    plt.title("BOFD Cost")
+    plt.show()
 

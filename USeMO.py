@@ -4,6 +4,7 @@ import os
 import subprocess
 
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 from sklearn.gaussian_process.kernels import RBF
@@ -26,7 +27,7 @@ interpreter_path = "E:/Summer Research 2023/DME-DRL Daniel/DME_DRL_CO/venv/Scrip
 best_crew_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/BOOF_best_crew.json "
 base_config_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/base_config_map4_1.yaml "
 test_run_config_path = "E:/Summer Research 2023/MADDPG_New/MADDPG/assets/BO_TO_MADDPG/"
-
+worst_performance = float('10000000')
 
 def cost_function(q):
     # Fixed costs for each feature level
@@ -305,6 +306,7 @@ if __name__ == "__main__":
         # Prepare the data for Gaussian process regression
         P = np.array([[p['N1'], p['N2'], p['N3'], p['N4']] for p in priors])
         Z = np.array([p['target'] for p in priors])
+        Z = np.array([float(p) for p in Z])
 
         # Fit the Gaussian process regressor
         regressor.fit(P, Z)
@@ -362,7 +364,12 @@ if __name__ == "__main__":
         best_objectives = res.F[best_index]
 
         # Evaluate the black-box function for the best_solution
-        best_performance = black_box_function(best_solution[0], best_solution[1], best_solution[2], best_solution[3])
+        if np.array_equal(best_solution, [0, 0, 0, 0]):
+            best_prior = {'N1': 0, 'N2': 0, 'N3': 0, 'N4': 0, 'target': worst_performance}
+            best_performance = worst_performance
+        else:
+            # Append the best_solution and its performance to the list of priors
+            best_prior, best_performance = call_initializer(best_solution)
         best_cost = cost_function(list(best_solution))
 
         # Append the best_solution and its performance to the list of priors
@@ -384,24 +391,70 @@ if __name__ == "__main__":
         priors.append(best_prior)
         priors2.append(best_prior2)
 
-        print("Point suggestion : {}, value: {}".format(best_solution, best_performance + best_cost))
+        print(f"Point suggestion: {str(best_solution)}, value: {str(float(best_performance) + best_cost)}")
         count += 1
 
-    visited_performance = np.array([p['target'] for p in priors])
-    visited_cost = np.array([p['target'] for p in priors2])
+    visited_performance = np.array([float(p['target']) for p in priors])
     visited_crews = np.array([[p['N1'], p['N2'], p['N3'], p['N4']] for p in priors])
+    visited_cost = np.array([cost_function(list(visited_crew)) for visited_crew in visited_crews])
+
+    print("visited_crews", visited_crews)
+    print('visited_performance', visited_performance)
+    print("visited_cost", visited_cost)
+
+    # Convert visited_crews array to a list of strings to use as x-axis ticks
+    x_data = [' '.join(map(str, crew)) for crew in visited_crews]
+
+    # Create an array of indices for x-axis positioning
+    x_indices = np.arange(len(x_data))
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Scatter plot
+    ax.scatter(x_indices, visited_performance, visited_cost, c='r', marker='o')
+
+    # Setting x-ticks
+    ax.set_xticks(x_indices)
+    ax.set_xticklabels(x_data, rotation=45, fontsize = 8)  # Rotate for readability
+
+    ax.set_xlabel('Crew Combinations')
+    ax.set_ylabel('Total Time')
+    ax.set_zlabel('Cost')
+    plt.ylim(0,2000);
+    plt.tight_layout()
+    plt.title("USeMO Result")
     visited_utility = visited_performance + visited_cost
+    print('visited_utility', visited_utility)
     best_visited_utility = np.argmin(visited_utility)
     best_crew = visited_crews[best_visited_utility]
-    print("Best point suggestion : {}, value: {}".format(best_crew, np.min(visited_utility)))
+    print("Best point suggestion : {}, iteration {}, value: {}".format(best_crew, best_visited_utility,
+                                                                       np.min(visited_utility)))
+    plt.show()
 
-    # True maximum
-    max_utility, max_crew = max_satisfaction()
-    print("The best crew is [{}, {}, {}, {}], the max value is {}".format(max_crew[0], max_crew[1], max_crew[2],
-                                                                          max_crew[3], max_utility))
+    # Convert visited_crews array to a list of strings to use as x-axis ticks
+    x_data = [' '.join(map(str, crew)) for crew in visited_crews]
 
+    # Create an array of indices for x-axis positioning
+    x_indices = np.arange(len(x_data))
 
+    # First 2D graph: Crew Combinations vs Performance + Cost
+    plt.figure(figsize=(10, 5))
+    plt.bar(x_indices, visited_performance, color='blue')
+    plt.xticks(x_indices, x_data, rotation=45, fontsize=8)
+    plt.ylabel('Total Time')
+    plt.xlabel('Crew Combinations')
+    plt.tight_layout()
+    plt.title("UseMO Total Time")
+    plt.ylim(0, 2000);
+    plt.show()
 
-
-
-
+    # Second 2D graph: Crew Combinations vs Cost
+    plt.figure(figsize=(10, 5))
+    plt.bar(x_indices, visited_cost, color='green')
+    plt.xticks(x_indices, x_data, rotation=45, fontsize=8)
+    plt.ylabel('Cost')
+    plt.xlabel('Crew Combinations')
+    plt.title("UseMO Cost")
+    plt.tight_layout()
+    plt.show()
