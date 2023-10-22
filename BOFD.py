@@ -297,9 +297,10 @@ if __name__ == "__main__":
 
     # Convert visited_crews array to a list of strings to use as x-axis ticks
     x_data = [' '.join(map(str, crew)) for crew in visited_crews]
-
-    # Create an array of indices for x-axis positioning
+    x_data = x_data[:20]
     x_indices = np.arange(len(x_data))
+    visited_performance = visited_performance[:20]
+    visited_cost = visited_cost[:20]
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -328,7 +329,7 @@ if __name__ == "__main__":
 
     # Convert visited_crews array to a list of strings to use as x-axis ticks
     x_data = [' '.join(map(str, crew)) for crew in visited_crews]
-
+    x_data = x_data[:20]
     # Create an array of indices for x-axis positioning
     x_indices = np.arange(len(x_data))
 
@@ -340,6 +341,7 @@ if __name__ == "__main__":
     plt.xlabel('Crew Combinations')
     plt.tight_layout()
     plt.ylim(0, 2000);
+
     plt.title("BOFD Total Time")
     plt.show()
 
