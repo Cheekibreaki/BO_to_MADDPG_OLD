@@ -1,0 +1,120 @@
+# cache file setting
+cache_file_path: ./cache/base_map1_config1_cache.json
+
+# world settings
+json_dir: /../HouseExpo/json
+png_dir: /../assets/png
+map_id_train_set: /../assets/map_1.txt
+map_id_eval_set: /../assets/map_1.txt
+
+# [GC,LC,NC]
+comm_mode: LC
+
+# model-related hyperparam
+done_expoloration: 0.95
+test: False
+e_render : False
+load_model: False
+MODEL_PATH: 'E:\Summer Research 2023\MADDPG_New\MADDPG\model\map3_converge\lowest_step-213.pth'
+#MODEL_PATH: ''
+batch_size: 60
+n_episode: 300
+max_steps: 50
+episodes_before_train: 60
+model_save_eps: 300
+temperature: 1.0
+
+
+
+
+GAMMA: 0.95
+tau: 0.01
+critic_lr: 0.001
+actor_lr: 0.0001
+
+# robots settings
+default_robot:
+
+  commRange: 200
+  syncRange: 200
+  robotRadius: 1
+  resetRandomPose: 0
+  "resolution": 0.1
+  startPose:
+    robot1:
+      x: 7
+      y: 7
+    robot2:
+      x: 70
+      y: 70
+    robot3:
+      x: 5
+      y: 45
+    robot4:
+      x: 75
+      y: 5
+    robot5:
+      x: 40
+      y: 30
+    robot6:
+      x: 60
+      y: 30
+    robot7:
+      x: 20
+      y: 30
+    robot8:
+      x: 18
+      y: 18
+    robot9:
+      x: 60
+      y: 40
+    robot10:
+      x: 50
+      y: 40
+    robot11:
+      x: 55
+      y: 60
+    robot12:
+      x: 50
+      y: 10
+  w1: 0.00002
+  w2: 0.001
+  w3: 0.1
+
+
+
+
+# sensor settings
+
+
+# others
+stateSize:
+  x: 145
+  y: 145
+
+# frontiers
+frontiers:
+  number: 8
+
+# map
+map:
+  y: 80
+  x: 80
+
+# color
+color:
+  # free: 10
+  # obstacle: 100
+  # uncertain: 55
+  # self: 200
+  # others: 150
+  # fog: 255
+  free: 0
+  obstacle: 100
+  uncertain: 50
+  self: 200
+  others: 150
+  fog: 255
+hyperparams:
+  alpha1: 0.01
+  alpha2: 0.01

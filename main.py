@@ -193,7 +193,7 @@ def call_initializaer(solution):
         json.dump(crew.tolist(), file)
     try:
         result = subprocess.run([interpreter_path, 'exploration_initializer.py',
-                                 file_path, base_config_path, test_run_config_path], check=True, cwd=os.getcwd(),
+                                 file_path, base_config_path, base_config_path], check=True, cwd=os.getcwd(),
                                 stdout=subprocess.PIPE, text=True, encoding='utf-8')
         result = result.stdout.splitlines()[-1]  # The standard output of the subprocess
         # Now 'result' is properly defined within the try block
