@@ -26,6 +26,7 @@ random.seed(2609)
 interpreter_path = "E:/Summer Research 2023/DME-DRL Daniel/DME_DRL_CO/venv/Scripts/python.exe "
 best_crew_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/BOOF_best_crew.json "
 base_config_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/base_config_map4_1.yaml "
+# base_config_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/base_config_map3_1.yaml "
 test_run_config_path = "E:/Summer Research 2023/MADDPG_New/MADDPG/assets/BO_TO_MADDPG/"
 worst_performance = float('10000000')
 
@@ -162,12 +163,15 @@ def sqrt_beta(t=6, delta=0.5, d=4):
 class CostProblem(Problem):
     # to do: change input to receive distribution
     def __init__(self, regressor, regressor2, kappa):
-        super().__init__(n_var=4, n_obj=2, n_constr=0, xl=np.array([0, 0, 0, 0]), xu=np.array([3, 3, 3, 3]))
+        super().__init__(n_var=4, n_obj=2, n_constr=1, xl=np.array([0, 0, 0, 0]), xu=np.array([3, 3, 3, 3]))
         self.regressor = regressor
         self.regressor2 = regressor2
         self.kappa = kappa
 
     def _evaluate(self, X, out, *args, **kwargs):
+        # Add a constraint to ensure that the sum is greater than 0
+        constraint = 1 - np.sum(X, axis=1)
+
         # to do: call performance from f1
         mu, sigma = self.regressor.predict(X, return_std=True)
         # LCB score as performance
@@ -177,7 +181,7 @@ class CostProblem(Problem):
         f2 = mu2 - self.kappa * sigma2
 
         out["F"] = np.column_stack([f1, f2])
-
+        out["G"] = constraint
 
 # Problem Hiperparameters
 budget = 20
@@ -199,44 +203,44 @@ if __name__ == "__main__":
     for N1, N2, N3, N4 in product(N_space, repeat=4):
         grid_points.append([N1, N2, N3, N4])
     grid_points = np.array(grid_points)
-
+    grid_points = grid_points[1:]
     # Initial Priors
-
-    # 1
-    # priors = [
-    #     {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': black_box_function(2, 0, 0, 3)},  # Prior 1
-    #     {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(0, 3, 3, 0)},  # Prior 2
-    #     {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': black_box_function(1, 1, 1, 2)},  # Prior 3
-    #     {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(3, 2, 2, 1)},  # prior 4
-    #     {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': black_box_function(3, 1, 3, 1)},  # prior 5
-    # ]
-    #
-    # priors2 = [
-    #     {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': cost_function([2, 0, 0, 3])},  # Prior 1
-    #     {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': cost_function([0, 3, 3, 0])},  # Prior 2
-    #     {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': cost_function([1, 1, 1, 2])},  # Prior 3
-    #     {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': cost_function([3, 2, 2, 1])},  # prior 4
-    #     {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': cost_function([3, 1, 3, 1])},  # prior 5
-    # ]
-
-
-    #2
-    #
-    # priors = [
-    #         {'N1': 0, 'N2': 1, 'N3':1, 'N4':3, 'target': black_box_function(0, 1, 1, 3)},   # Prior 1
-    #         {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': black_box_function(2, 2, 2, 1)},   # Prior 2
-    #         {'N1': 3, 'N2': 0, 'N3':0, 'N4':2, 'target': black_box_function(3, 0, 0, 2)},   # Prior 3
-    #         {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': black_box_function(1, 3, 3, 0)},   #prior 4
-    #         {'N1': 1, 'N2': 0, 'N3':2, 'N4':0, 'target': black_box_function(1, 0, 2, 0)},   #prior 5
-    #     ]
-    # priors2 = [
-    #         {'N1': 0, 'N2': 1, 'N3':1, 'N4':3, 'target': cost_function([0, 1, 1, 3])},   # Prior 1
-    #         {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': cost_function([2, 2, 2, 1])},   # Prior 2
-    #         {'N1': 3, 'N2': 0, 'N3':0, 'N4':2, 'target': cost_function([3, 0, 0, 2])},   # Prior 3
-    #         {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': cost_function([1, 3, 3, 0])},   #prior 4
-    #         {'N1': 1, 'N2': 0, 'N3':2, 'N4':0, 'target': cost_function([1, 0, 2, 0])},   #prior 5
-    #     ]
     '''
+    # 1
+    priors = [
+         {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': black_box_function(2, 0, 0, 3)},  # Prior 1
+         {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(0, 3, 3, 0)},  # Prior 2
+         {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': black_box_function(1, 1, 1, 2)},  # Prior 3
+         {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(3, 2, 2, 1)},  # prior 4
+         {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': black_box_function(3, 1, 3, 1)},  # prior 5
+     ]
+
+    priors2 = [
+         {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': cost_function([2, 0, 0, 3])},  # Prior 1
+         {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': cost_function([0, 3, 3, 0])},  # Prior 2
+         {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': cost_function([1, 1, 1, 2])},  # Prior 3
+         {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': cost_function([3, 2, 2, 1])},  # prior 4
+         {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': cost_function([3, 1, 3, 1])},  # prior 5
+     ]
+    
+    
+    #2
+
+    priors = [
+            {'N1': 0, 'N2': 1, 'N3':1, 'N4':3, 'target': black_box_function(0, 1, 1, 3)},   # Prior 1
+            {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': black_box_function(2, 2, 2, 1)},   # Prior 2
+            {'N1': 3, 'N2': 0, 'N3':0, 'N4':2, 'target': black_box_function(3, 0, 0, 2)},   # Prior 3
+            {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': black_box_function(1, 3, 3, 0)},   #prior 4
+            {'N1': 1, 'N2': 0, 'N3':2, 'N4':0, 'target': black_box_function(1, 0, 2, 0)},   #prior 5
+        ]
+    priors2 = [
+            {'N1': 0, 'N2': 1, 'N3':1, 'N4':3, 'target': cost_function([0, 1, 1, 3])},   # Prior 1
+            {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': cost_function([2, 2, 2, 1])},   # Prior 2
+            {'N1': 3, 'N2': 0, 'N3':0, 'N4':2, 'target': cost_function([3, 0, 0, 2])},   # Prior 3
+            {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': cost_function([1, 3, 3, 0])},   #prior 4
+            {'N1': 1, 'N2': 0, 'N3':2, 'N4':0, 'target': cost_function([1, 0, 2, 0])},   #prior 5
+        ]
+    
     #3 
     priors = [ 
             {'N1': 3, 'N2': 3, 'N3':2, 'N4':1, 'target': black_box_function(3, 3, 2, 1)},   # Prior 1
@@ -252,40 +256,41 @@ if __name__ == "__main__":
             {'N1': 2, 'N2': 1, 'N3':1, 'N4':2, 'target': cost_function([2, 1, 1, 2])},   #prior 4
             {'N1': 2, 'N2': 2, 'N3':0, 'N4':2, 'target': cost_function([2, 2, 0, 2])},   #prior 5
         ]
-   
+     '''
     #4 
-    # priors = [ 
-    #         {'N1': 1, 'N2': 3, 'N3':1, 'N4':2, 'target': black_box_function(1, 3, 1, 2)},   # Prior 1
-    #         {'N1': 2, 'N2': 0, 'N3':2, 'N4':1, 'target': black_box_function(2, 0, 2, 1)},   # Prior 2
-    #         {'N1': 3, 'N2': 2, 'N3':0, 'N4':3, 'target': black_box_function(3, 2, 0, 3)},   # Prior 3
-    #         {'N1': 0, 'N2': 1, 'N3':3, 'N4':0, 'target': black_box_function(0, 1, 3, 0)},   #prior 4
-    #         {'N1': 0, 'N2': 2, 'N3':2, 'N4':0, 'target': black_box_function(0, 2, 2, 0)},   #prior 5
-    #     ]    
-    # 
-    # priors2 = [ 
-    #         {'N1': 1, 'N2': 3, 'N3':1, 'N4':2, 'target': cost_function([1, 3, 1, 2])},   # Prior 1
-    #         {'N1': 2, 'N2': 0, 'N3':2, 'N4':1, 'target': cost_function([2, 0, 2, 1])},   # Prior 2
-    #         {'N1': 3, 'N2': 2, 'N3':0, 'N4':3, 'target': cost_function([3, 2, 0, 3])},   # Prior 3
-    #         {'N1': 0, 'N2': 1, 'N3':3, 'N4':0, 'target': cost_function([0, 1, 3, 0])},   #prior 4
-    #         {'N1': 0, 'N2': 2, 'N3':2, 'N4':0, 'target': cost_function([0, 2, 2, 0])},   #prior 5
-    #     ] 
-    '''
-    #5 
     priors = [ 
-            {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': black_box_function(1, 3, 3, 0)},   # Prior 1
-            {'N1': 3, 'N2': 1, 'N3':0, 'N4':3, 'target': black_box_function(3, 1, 0, 3)},   # Prior 2
-            {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': black_box_function(2, 2, 2, 1)},   # Prior 3
-            {'N1': 0, 'N2': 0, 'N3':1, 'N4':2, 'target': black_box_function(0, 0, 1, 2)},   #prior 4
-            {'N1': 0, 'N2': 2, 'N3':0, 'N4':2, 'target': black_box_function(0, 2, 0, 2)},   #prior 5
-        ]
+            {'N1': 1, 'N2': 3, 'N3':1, 'N4':2, 'target': black_box_function(1, 3, 1, 2)},   # Prior 1
+            {'N1': 2, 'N2': 0, 'N3':2, 'N4':1, 'target': black_box_function(2, 0, 2, 1)},   # Prior 2
+            {'N1': 3, 'N2': 2, 'N3':0, 'N4':3, 'target': black_box_function(3, 2, 0, 3)},   # Prior 3
+            {'N1': 0, 'N2': 1, 'N3':3, 'N4':0, 'target': black_box_function(0, 1, 3, 0)},   #prior 4
+            {'N1': 0, 'N2': 2, 'N3':2, 'N4':0, 'target': black_box_function(0, 2, 2, 0)},   #prior 5
+        ]    
 
     priors2 = [ 
-            {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': cost_function([1, 3, 3, 0])},   # Prior 1
-            {'N1': 3, 'N2': 1, 'N3':0, 'N4':3, 'target': cost_function([3, 1, 0, 3])},   # Prior 2
-            {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': cost_function([2, 2, 2, 1])},   # Prior 3
-            {'N1': 0, 'N2': 0, 'N3':1, 'N4':2, 'target': cost_function([0, 0, 1, 2])},   #prior 4
-            {'N1': 0, 'N2': 2, 'N3':0, 'N4':2, 'target': cost_function([0, 2, 0, 2])},   #prior 5
+            {'N1': 1, 'N2': 3, 'N3':1, 'N4':2, 'target': cost_function([1, 3, 1, 2])},   # Prior 1
+            {'N1': 2, 'N2': 0, 'N3':2, 'N4':1, 'target': cost_function([2, 0, 2, 1])},   # Prior 2
+            {'N1': 3, 'N2': 2, 'N3':0, 'N4':3, 'target': cost_function([3, 2, 0, 3])},   # Prior 3
+            {'N1': 0, 'N2': 1, 'N3':3, 'N4':0, 'target': cost_function([0, 1, 3, 0])},   #prior 4
+            {'N1': 0, 'N2': 2, 'N3':2, 'N4':0, 'target': cost_function([0, 2, 2, 0])},   #prior 5
         ]
+
+    #5 
+    # priors = [
+    #         {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': black_box_function(1, 3, 3, 0)},   # Prior 1
+    #         {'N1': 3, 'N2': 1, 'N3':0, 'N4':3, 'target': black_box_function(3, 1, 0, 3)},   # Prior 2
+    #         {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': black_box_function(2, 2, 2, 1)},   # Prior 3
+    #         {'N1': 0, 'N2': 0, 'N3':1, 'N4':2, 'target': black_box_function(0, 0, 1, 2)},   #prior 4
+    #         {'N1': 0, 'N2': 2, 'N3':0, 'N4':2, 'target': black_box_function(0, 2, 0, 2)},   #prior 5
+    #     ]
+    #
+    # priors2 = [
+    #         {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': cost_function([1, 3, 3, 0])},   # Prior 1
+    #         {'N1': 3, 'N2': 1, 'N3':0, 'N4':3, 'target': cost_function([3, 1, 0, 3])},   # Prior 2
+    #         {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': cost_function([2, 2, 2, 1])},   # Prior 3
+    #         {'N1': 0, 'N2': 0, 'N3':1, 'N4':2, 'target': cost_function([0, 0, 1, 2])},   #prior 4
+    #         {'N1': 0, 'N2': 2, 'N3':0, 'N4':2, 'target': cost_function([0, 2, 0, 2])},   #prior 5
+    #     ]
+
 
     count = 1
     while count <= budget:
@@ -390,7 +395,6 @@ if __name__ == "__main__":
 
         priors.append(best_prior)
         priors2.append(best_prior2)
-
         print(f"Point suggestion: {str(best_solution)}, value: {str(float(best_performance) + best_cost)}")
         count += 1
 

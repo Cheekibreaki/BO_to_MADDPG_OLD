@@ -40,16 +40,21 @@ class MySampling(Sampling):
         # Create grid of discrete points in the search space
         N_space = [0, 1, 2, 3]
         grid_points = np.array(list(product(N_space, repeat=problem.n_var)))
+        grid_points = grid_points[1:]
 
         # Predict LCB scores for all grid points
         mu, sigma = problem.regressor.predict(grid_points, return_std=True)
         LCB_scores = mu - problem.kappa * sigma
 
+        # Cost function:
+        c0 = cost_function(grid_points)
+        # Approximate performance using single objective
+        f0 = LCB_scores + c0
         # Find the indices of the n_samples points with the lowest LCB scores
-        min_LCB_indices = np.argsort(LCB_scores)[:n_samples]
+        min_f0_indices = np.argsort(f0)[:n_samples]
 
         # Extract the best n_samples points from the grid points
-        selected_samples = grid_points[min_LCB_indices]
+        selected_samples = grid_points[min_f0_indices]
 
         # Fill the population matrix with the selected samples
         X[:n_samples, :] = selected_samples
@@ -94,11 +99,15 @@ def sqrt_beta(t=6, delta=0.5, d=4):
 class CostProblem(Problem):
     # to do: change input to receive distribution
     def __init__(self, regressor, kappa):
-        super().__init__(n_var=4, n_obj=2, n_constr=0, xl=np.array([0, 0, 0, 0]), xu=np.array([3, 3, 3, 3]))
+        super().__init__(n_var=4, n_obj=2, n_constr=1, xl=np.array([0, 0, 0, 0]), xu=np.array([3, 3, 3, 3]))
         self.regressor = regressor
         self.kappa = kappa
 
     def _evaluate(self, X, out, *args, **kwargs):
+
+        # Add a constraint to ensure that the sum is greater than 0
+        constraint = 1 - np.sum(X, axis=1)
+
         # to do: call performance from f1
         mu, sigma = self.regressor.predict(X, return_std=True)
         # LCB score as performance
@@ -107,7 +116,7 @@ class CostProblem(Problem):
         f2 = cost_function(X)
 
         out["F"] = np.column_stack([f1, f2])
-
+        out["G"] = constraint
 
 # Debugging purpose
 class MyCallback(Callback):
@@ -183,7 +192,7 @@ def black_box_function(N1, N2, N3, N4):
     return result
 
 
-budget = 30
+budget = 20
 satisfaction_dict = {}  # Dictionary to store satisfaction values for each unique crew
 satisfaction_lower_bound = 0
 satisfaction_upper_bound = 750  # 150 * 5
@@ -198,23 +207,54 @@ if __name__ == "__main__":
     for N1, N2, N3, N4 in product(N_space, repeat=4):
         grid_points.append([N1, N2, N3, N4])
     grid_points = np.array(grid_points)
-
+    grid_points = grid_points[1:]
+    '''
+    #1
     priors = [
-        {'N1': 1, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(1, 3, 3, 0)},  # Prior 1
-        {'N1': 3, 'N2': 1, 'N3': 0, 'N4': 3, 'target': black_box_function(3, 1, 0, 3)},  # Prior 2
-        {'N1': 2, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(2, 2, 2, 1)},  # Prior 3
-        {'N1': 0, 'N2': 0, 'N3': 1, 'N4': 2, 'target': black_box_function(0, 0, 1, 2)},  # prior 4
-        {'N1': 0, 'N2': 2, 'N3': 0, 'N4': 2, 'target': black_box_function(0, 2, 0, 2)},  # prior 5
+        {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': black_box_function(2, 0, 0, 3)},  # Prior 1
+        {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(0, 3, 3, 0)},  # Prior 2
+        {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': black_box_function(1, 1, 1, 2)},  # Prior 3
+        {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(3, 2, 2, 1)},  # prior 4
+        {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': black_box_function(3, 1, 3, 1)},  # prior 5
     ]
+    
+    #2
+    priors = [
+            {'N1': 0, 'N2': 1, 'N3':1, 'N4':3, 'target': black_box_function(0, 1, 1, 3)},   # Prior 1
+            {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': black_box_function(2, 2, 2, 1)},   # Prior 2
+            {'N1': 3, 'N2': 0, 'N3':0, 'N4':2, 'target': black_box_function(3, 0, 0, 2)},   # Prior 3
+            {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': black_box_function(1, 3, 3, 0)},   #prior 4
+            {'N1': 1, 'N2': 0, 'N3':2, 'N4':0, 'target': black_box_function(1, 0, 2, 0)},   #prior 5
+        ]
+    '''
+    #3 
+    priors = [ 
+            {'N1': 3, 'N2': 3, 'N3':2, 'N4':1, 'target': black_box_function(3, 3, 2, 1)},   # Prior 1
+            {'N1': 1, 'N2': 0, 'N3':0, 'N4':3, 'target': black_box_function(1, 0, 0, 3)},   # Prior 2
+            {'N1': 0, 'N2': 2, 'N3':3, 'N4':0, 'target': black_box_function(0, 2, 3, 0)},   # Prior 3
+            {'N1': 2, 'N2': 1, 'N3':1, 'N4':2, 'target': black_box_function(2, 1, 1, 2)},   #prior 4
+            {'N1': 2, 'N2': 2, 'N3':0, 'N4':2, 'target': black_box_function(2, 2, 0, 2)},   #prior 5
+        ]
+    '''
+    #4 
+    priors = [ 
+            {'N1': 1, 'N2': 3, 'N3':1, 'N4':2, 'target': black_box_function(1, 3, 1, 2)},   # Prior 1
+            {'N1': 2, 'N2': 0, 'N3':2, 'N4':1, 'target': black_box_function(2, 0, 2, 1)},   # Prior 2
+            {'N1': 3, 'N2': 2, 'N3':0, 'N4':3, 'target': black_box_function(3, 2, 0, 3)},   # Prior 3
+            {'N1': 0, 'N2': 1, 'N3':3, 'N4':0, 'target': black_box_function(0, 1, 3, 0)},   #prior 4
+            {'N1': 0, 'N2': 2, 'N3':2, 'N4':0, 'target': black_box_function(0, 2, 2, 0)},   #prior 5
+        ]    
+    
+    #5 
+    priors = [ 
+            {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': black_box_function(1, 3, 3, 0)},   # Prior 1
+            {'N1': 3, 'N2': 1, 'N3':0, 'N4':3, 'target': black_box_function(3, 1, 0, 3)},   # Prior 2
+            {'N1': 2, 'N2': 2, 'N3':2, 'N4':1, 'target': black_box_function(2, 2, 2, 1)},   # Prior 3
+            {'N1': 0, 'N2': 0, 'N3':1, 'N4':2, 'target': black_box_function(0, 0, 1, 2)},   #prior 4
+            {'N1': 0, 'N2': 2, 'N3':0, 'N4':2, 'target': black_box_function(0, 2, 0, 2)},   #prior 5
+        ]
+    '''
 
-    # priors = [
-    #     {'N1': 0, 'N2': 1, 'N3': 1, 'N4': 3, 'target': black_box_function(0, 1, 1, 3)},  # Prior 1
-    #     {'N1': 2, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(2, 2, 2, 1)},  # Prior 2
-    #     {'N1': 3, 'N2': 0, 'N3': 0, 'N4': 2, 'target': black_box_function(3, 0, 0, 2)},  # Prior 3
-    #     {'N1': 1, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(1, 3, 3, 0)},  # prior 4
-    #     {'N1': 1, 'N2': 0, 'N3': 2, 'N4': 0, 'target': black_box_function(1, 0, 2, 0)},  # prior 5
-    # ]
-    # print("Priors:", priors)
 
     count = 1
 
