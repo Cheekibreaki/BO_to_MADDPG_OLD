@@ -46,7 +46,7 @@ def cost_function(q):
         total_cost = q[:, 0] * cost_high_high + q[:, 1] * cost_high_low + q[:, 2] * cost_low_high + q[:,
                                                                                                          3] * cost_low_low
 
-    return total_cost
+    return float(total_cost)
 
 
 # define the black box function
@@ -70,7 +70,7 @@ def black_box_function(N1, N2, N3, N4):
         print(f"Error running exploration script_path: {e}")
         raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
-    return -1 * result
+    return float(-1 * float(result))
 
 
 # Exploration factor kappa
