@@ -44,9 +44,9 @@ def cost_function(q):
     else:
         # Calculate the total cost of the crew
         total_cost = q[:, 0] * cost_high_high + q[:, 1] * cost_high_low + q[:, 2] * cost_low_high + q[:,
-                                                                                                         3] * cost_low_low
+                                                                                                    3] * cost_low_low
 
-    return float(total_cost)
+    return total_cost
 
 
 # define the black box function
@@ -70,7 +70,7 @@ def black_box_function(N1, N2, N3, N4):
         print(f"Error running exploration script_path: {e}")
         raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
-    return float(-1 * float(result))
+    return float(result)
 
 
 # Exploration factor kappa
@@ -85,31 +85,8 @@ def sqrt_beta(t=6, delta=0.5, d=4):
     return value
 
 
-# Define a custom problem for NSGA-II
-class CostProblem(Problem):
-    # to do: change input to receive distribution
-    def __init__(self, regressor, kappa):
-        super().__init__(n_var=4, n_obj=2, n_constr=0, xl=np.array([0, 0, 0, 0]), xu=np.array([3, 3, 3, 3]))
-        self.regressor = regressor
-        self.kappa = kappa
-
-    def _evaluate(self, X, out, *args, **kwargs):
-        # to do: call performance from f1
-        mu, sigma = self.regressor.predict(X, return_std=True)
-        # LCB score as performance
-        f1 = mu - self.kappa * sigma
-        # Cost function:
-        mu2, sigma2 = self.regressor2.predict(X, return_std=True)
-        f2 = mu2 - self.kappa * sigma2
-
-        out["F"] = np.column_stack([f1, f2])
-
-
 # Problem Hyperparameters
 budget = 20
-satisfaction_dict = {}  # Dictionary to store satisfaction values for each unique crew
-satisfaction_lower_bound = 0
-satisfaction_upper_bound = 750
 
 if __name__ == "__main__":
     # Generate discrete and linear space
@@ -121,17 +98,22 @@ if __name__ == "__main__":
     for N1, N2, N3, N4 in product(N_space, repeat=4):
         grid_points.append([N1, N2, N3, N4])
     grid_points = np.array(grid_points)
-
+    grid_points = grid_points[1:]
     # Initial Priors
-    '''
-    #1
-    priors = [ 
-            {'N1': 2, 'N2': 0, 'N3':0, 'N4':3, 'target': black_box_function(2, 0, 0, 3)+cost_function([2, 0, 0, 3])},   # Prior 1
-            {'N1': 0, 'N2': 3, 'N3':3, 'N4':0, 'target': black_box_function(0, 3, 3, 0)+cost_function([0, 3, 3, 0])},   # Prior 2
-            {'N1': 1, 'N2': 1, 'N3':1, 'N4':2, 'target': black_box_function(1, 1, 1, 2)+cost_function([1, 1, 1, 2])},   # Prior 3
-            {'N1': 3, 'N2': 2, 'N3':2, 'N4':1, 'target': black_box_function(3, 2, 2, 1)+cost_function([3, 2, 2, 1])},   #prior 4
-            {'N1': 3, 'N2': 1, 'N3':3, 'N4':1, 'target': black_box_function(3, 1, 3, 1)+cost_function([3, 1, 3, 1])},   #prior 5
-        ]
+
+    # 1
+    # priors = [
+    #     {'N1': 2, 'N2': 0, 'N3': 0, 'N4': 3, 'target': black_box_function(2, 0, 0, 3) + cost_function([2, 0, 0, 3])},
+    #     # Prior 1
+    #     {'N1': 0, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(0, 3, 3, 0) + cost_function([0, 3, 3, 0])},
+    #     # Prior 2
+    #     {'N1': 1, 'N2': 1, 'N3': 1, 'N4': 2, 'target': black_box_function(1, 1, 1, 2) + cost_function([1, 1, 1, 2])},
+    #     # Prior 3
+    #     {'N1': 3, 'N2': 2, 'N3': 2, 'N4': 1, 'target': black_box_function(3, 2, 2, 1) + cost_function([3, 2, 2, 1])},
+    #     # prior 4
+    #     {'N1': 3, 'N2': 1, 'N3': 3, 'N4': 1, 'target': black_box_function(3, 1, 3, 1) + cost_function([3, 1, 3, 1])},
+    #     # prior 5
+    # ]
 
     #2
     priors = [ 
@@ -141,7 +123,7 @@ if __name__ == "__main__":
             {'N1': 1, 'N2': 3, 'N3':3, 'N4':0, 'target': black_box_function(1, 3, 3, 0)+cost_function([1, 3, 3, 0])},   #prior 4
             {'N1': 1, 'N2': 0, 'N3':2, 'N4':0, 'target': black_box_function(1, 0, 2, 0)+cost_function([1, 0, 2, 0])},   #prior 5
         ]
-
+    '''
     #3 
     priors = [ 
             {'N1': 3, 'N2': 3, 'N3':2, 'N4':1, 'target': black_box_function(3, 3, 2, 1)+cost_function([3, 3, 2, 1])},   # Prior 1
@@ -159,7 +141,7 @@ if __name__ == "__main__":
             {'N1': 0, 'N2': 1, 'N3':3, 'N4':0, 'target': black_box_function(0, 1, 3, 0)+cost_function([0, 1, 3, 0])},   #prior 4
             {'N1': 0, 'N2': 2, 'N3':2, 'N4':0, 'target': black_box_function(0, 2, 2, 0)+cost_function([0, 2, 2, 0])},   #prior 5
         ]    
-    '''
+
     # 5
     priors = [
         {'N1': 1, 'N2': 3, 'N3': 3, 'N4': 0, 'target': black_box_function(1, 3, 3, 0) + cost_function([1, 3, 3, 0])},
@@ -173,7 +155,7 @@ if __name__ == "__main__":
         {'N1': 0, 'N2': 2, 'N3': 0, 'N4': 2, 'target': black_box_function(0, 2, 0, 2) + cost_function([0, 2, 0, 2])},
         # prior 5
     ]
-
+    '''
     count = 1
     while count <= budget:
         print('Iteration: ', count)
@@ -205,11 +187,11 @@ if __name__ == "__main__":
         best_objectives = LCB[best_index]
 
         # Evaluate the black-box function for the best_solution
-        if np.array_equal(best_solution, [0, 0, 0, 0]):
-            best_prior = {'N1': 0, 'N2': 0, 'N3': 0, 'N4': 0, 'target': worst_performance}
-            best_performance = worst_performance
-        else:
-            best_performance = black_box_function(best_solution[0], best_solution[1], best_solution[2], best_solution[3])
+        # if np.array_equal(best_solution, [0, 0, 0, 0]):
+        #    best_prior = {'N1': 0, 'N2': 0, 'N3': 0, 'N4': 0, 'target': worst_performance}
+        #    best_performance = worst_performance
+        # else:
+        best_performance = black_box_function(best_solution[0], best_solution[1], best_solution[2], best_solution[3])
         best_cost = cost_function(list(best_solution))
 
         # Append the best_solution and its performance to the list of priors
@@ -232,7 +214,7 @@ if __name__ == "__main__":
     best_crew = visited_crews[best_visited_utility]
 
     print("visited_crews", visited_crews)
-    print('visited_performance', visited_utility)
+    print('visited_performance', visited_utility - visited_cost)
     print("visited_cost", visited_cost)
 
     print("Best point suggestion : {}, value: {}".format(best_crew, np.min(visited_utility)))
@@ -259,7 +241,7 @@ if __name__ == "__main__":
     plt.ylim(0, 2000);
     plt.tight_layout()
     plt.title("Naive Result")
-    visited_utility = visited_utility + visited_cost
+    visited_utility = visited_utility
     print('visited_utility', visited_utility)
     best_visited_utility = np.argmin(visited_utility)
     best_crew = visited_crews[best_visited_utility]
@@ -275,7 +257,7 @@ if __name__ == "__main__":
 
     # First 2D graph: Crew Combinations vs Performance + Cost
     plt.figure(figsize=(10, 5))
-    plt.bar(x_indices, visited_utility, color='blue')
+    plt.bar(x_indices, visited_utility - visited_cost, color='blue')
     plt.xticks(x_indices, x_data, rotation=45, fontsize=8)
     plt.ylabel('Total Time')
     plt.xlabel('Crew Combinations')
