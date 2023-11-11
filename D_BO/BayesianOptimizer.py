@@ -378,10 +378,10 @@ class BayesianOptimizer():
             # Increase counter
             self.ite += 1
 
-            # Specify the file path
-            file_path = os.getcwd() + '/D_BO_best_crew.json'
-            # Write the data to the JSON file
-            with open(file_path, 'w') as file:
-                json.dump(np.array(rX), file)
+            # # Specify the file path
+            # file_path = os.getcwd() + '/D_BO_best_crew.json'
+            # # Write the data to the JSON file
+            # with open(file_path, 'w') as file:
+            #     json.dump(np.array(rX), file)
 
         return self.Xobs[np.argmax(self.Yobs)], self.Xobs, self.Yobs, self.ite

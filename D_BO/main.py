@@ -96,7 +96,7 @@ class discreteBranin:
         except subprocess.CalledProcessError as e:
             print(f"Error running exploration script_path: {e}")
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
-        return -1 * result + calculate_cost(crew)
+        return result + calculate_cost(crew)
 
     def call_initializer(solution):
         # Specify the file path
@@ -116,7 +116,7 @@ class discreteBranin:
             print(f"Error running exploration script_path: {e}")
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
-        return -1 * result + calculate_cost(crew)
+        return result + calculate_cost(crew)
 
     # define the black box function
     def _interfunc(self, X):
