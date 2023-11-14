@@ -135,9 +135,12 @@ class BayesianOptimizer():
         # self.nXobs = self.Xobs.copy()
         # for i in range(0,len(self.nXobs)):
         #     self.nXobs[i] = self.function.normalize(self.nXobs[i])
-
+        self.Xobs = [(2, 0, 0, 3), (0, 3, 3, 0), (1, 1, 1, 2), (3, 2, 2, 1), (3, 1, 3, 1)]
+        # self.Xobs = [(1, 3, 3, 0), (3, 1, 0, 3), (2, 2, 2, 1), (0, 0, 1, 2), (0, 2, 0, 2)]
+        # self.Xobs = [(1, 3, 3, 0), (3, 1, 0, 3), (2, 2, 2, 1), (0, 0, 1, 2), (0, 2, 0, 2)]
         self.Xobs = [(1,3,3,0), (3,1,0,3), (2,2,2,1), (0,0,1,2), (0,2,0,2)]
         self.Yobs = [self.function.black_box_function(np.array(i)) for i in self.Xobs]
+        print(self.Yobs)
         self.nXobs = self.Xobs.copy()
         for i in range(0,len(self.nXobs)):
             self.nXobs[i] = self.function.normalize(self.nXobs[i])

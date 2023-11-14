@@ -20,7 +20,7 @@ random.seed(2609)
 worst_performance = float('10000000')
 # interpreter_path = "C:/Users/Daniel Yin/AppData/Local/Programs/Python/Python39/python.exe"
 interpreter_path = "E:/Summer Research 2023/DME-DRL Daniel/DME_DRL_CO/venv/Scripts/python.exe "
-best_crew_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/BOOF_best_crew.json "
+best_crew_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/D_BO/D_BO_best_crew.json "
 base_config_path = "E:/Summer Research 2023/BO_to_MADDPG/BO_to_MADDPG/base_config_map4_1.yaml "
 test_run_config_path = "E:/Summer Research 2023/MADDPG_New/MADDPG/assets/BO_TO_MADDPG/"
 
@@ -42,7 +42,7 @@ def calculate_cost(X):
 
     # Calculate the total cost of the crew
     total_cost = q_low_low * cost_low_low + q_high_low * cost_high_low + q_low_high * cost_low_high + q_high_high * cost_high_high
-    return total_cost
+    return float(total_cost)
 
 
 class discreteBranin:
@@ -80,7 +80,7 @@ class discreteBranin:
             # Convert the N values into a list and then into a string for passing to subprocess
             values_as_list.append(xi)
 
-        file_path = os.getcwd() + '/DBO_priors.json'
+        file_path = os.getcwd() + '/D_BO_best_crew.json'
         # print("values_as_list", values_as_list)
 
         crew = np.array(values_as_list)
@@ -96,9 +96,9 @@ class discreteBranin:
         except subprocess.CalledProcessError as e:
             print(f"Error running exploration script_path: {e}")
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
-        return result + calculate_cost(crew)
+        return float(result) + calculate_cost(crew)
 
-    def call_initializer(solution):
+    def call_initializer(self, solution):
         # Specify the file path
         file_path = os.getcwd() + '/D_BO_best_crew.json'
 
@@ -116,7 +116,7 @@ class discreteBranin:
             print(f"Error running exploration script_path: {e}")
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
-        return result + calculate_cost(crew)
+        return float(result) + float(calculate_cost(crew))
 
     # define the black box function
     def _interfunc(self, X):
