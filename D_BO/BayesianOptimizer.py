@@ -23,7 +23,8 @@ random.seed(2609)
 num_of_trainingPoints = 40
 
 X = []
-Xobs = [(1,3,3,0), (3,1,0,3), (2,2,2,1), (0,0,1,2), (0,2,0,2)]
+#Xobs = [(1,3,3,0), (3,1,0,3), (2,2,2,1), (0,0,1,2), (0,2,0,2)]
+Xobs = []
 Yobs = []
 
 
@@ -138,7 +139,7 @@ class BayesianOptimizer():
         self.Xobs = [(2, 0, 0, 3), (0, 3, 3, 0), (1, 1, 1, 2), (3, 2, 2, 1), (3, 1, 3, 1)]
         # self.Xobs = [(1, 3, 3, 0), (3, 1, 0, 3), (2, 2, 2, 1), (0, 0, 1, 2), (0, 2, 0, 2)]
         # self.Xobs = [(1, 3, 3, 0), (3, 1, 0, 3), (2, 2, 2, 1), (0, 0, 1, 2), (0, 2, 0, 2)]
-        self.Xobs = [(1,3,3,0), (3,1,0,3), (2,2,2,1), (0,0,1,2), (0,2,0,2)]
+        # self.Xobs = [(1,3,3,0), (3,1,0,3), (2,2,2,1), (0,0,1,2), (0,2,0,2)]
         self.Yobs = [self.function.black_box_function(np.array(i)) for i in self.Xobs]
         print(self.Yobs)
         self.nXobs = self.Xobs.copy()
@@ -387,4 +388,4 @@ class BayesianOptimizer():
             # with open(file_path, 'w') as file:
             #     json.dump(np.array(rX), file)
 
-        return self.Xobs[np.argmax(self.Yobs)], self.Xobs, self.Yobs, self.ite
+        return self.Xobs[np.argmax(self.Yobs)], self.Xobs, -1*self.Yobs, self.ite

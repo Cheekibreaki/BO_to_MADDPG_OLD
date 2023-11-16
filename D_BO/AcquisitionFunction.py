@@ -110,7 +110,7 @@ class AcquisitionFunction(object):
         mean, _, var = gp.predictScalarLib(x)
 
         std = np.sqrt(var)
-        result = np.matrix(mean - beta * std)
+        result = np.matrix(mean + beta * std)
         return result
 
     @staticmethod

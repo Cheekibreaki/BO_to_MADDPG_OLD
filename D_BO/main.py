@@ -96,13 +96,16 @@ class discreteBranin:
         except subprocess.CalledProcessError as e:
             print(f"Error running exploration script_path: {e}")
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
-        return float(result) + calculate_cost(crew)
+        return -1* (float(result) + calculate_cost(crew))
 
     def call_initializer(self, solution):
         # Specify the file path
         file_path = os.getcwd() + '/D_BO_best_crew.json'
-
         crew = np.array(solution)
+        if np.array_equal(solution, [0, 0, 0, 0]):
+            
+            return -1 * (float(worst_performance) + float(calculate_cost(crew)))
+
         # Write the data to the JSON file
         with open(file_path, 'w') as file:
             json.dump(crew.tolist(), file)
@@ -116,7 +119,7 @@ class discreteBranin:
             print(f"Error running exploration script_path: {e}")
             raise RuntimeError("command '{}' return with error (code {}): {}".format(e.cmd, e.returncode, e.output))
 
-        return float(result) + float(calculate_cost(crew))
+        return -1* (float(result) + float(calculate_cost(crew)))
 
     # define the black box function
     def _interfunc(self, X):
