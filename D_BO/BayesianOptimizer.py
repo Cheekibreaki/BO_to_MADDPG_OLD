@@ -29,7 +29,7 @@ Yobs = []
 
 
 class BayesianOptimizer():
-    def __init__(self, inFunc, initGuess=5, lamda=0.1, kerneltype="ise", numIter=30, isTrans=False, localOptAlgo="L-BFGS-B"):
+    def __init__(self, inFunc, initGuess=5, lamda=0.1, kerneltype="ise", numIter=20, isTrans=False, localOptAlgo="L-BFGS-B"):
         self.logs = ""
         self.logDup = ""
         self.logNext = ""
@@ -136,10 +136,13 @@ class BayesianOptimizer():
         # self.nXobs = self.Xobs.copy()
         # for i in range(0,len(self.nXobs)):
         #     self.nXobs[i] = self.function.normalize(self.nXobs[i])
-        self.Xobs = [(2, 0, 0, 3), (0, 3, 3, 0), (1, 1, 1, 2), (3, 2, 2, 1), (3, 1, 3, 1)]
+        #self.Xobs = [(2, 0, 0, 3), (0, 3, 3, 0), (1, 1, 1, 2), (3, 2, 2, 1), (3, 1, 3, 1)]
+        #self.Xobs = [(0,1,1,3), (2,2,2,1), (3,0,0,2), (1,3,3,0), (1,0,2,0)]
+        #self.Xobs = [(3, 3, 2, 1), (1, 0, 0, 3), (0, 2, 3, 0), (2, 1, 1, 2), (2, 2, 0, 2)]
+
+        self.Xobs = [(1, 3, 1, 2), (2, 0, 2, 1), (3, 2, 0, 3), (0, 1, 3, 0), (0, 2, 2, 0)]
         # self.Xobs = [(1, 3, 3, 0), (3, 1, 0, 3), (2, 2, 2, 1), (0, 0, 1, 2), (0, 2, 0, 2)]
-        # self.Xobs = [(1, 3, 3, 0), (3, 1, 0, 3), (2, 2, 2, 1), (0, 0, 1, 2), (0, 2, 0, 2)]
-        # self.Xobs = [(1,3,3,0), (3,1,0,3), (2,2,2,1), (0,0,1,2), (0,2,0,2)]
+
         self.Yobs = [self.function.black_box_function(np.array(i)) for i in self.Xobs]
         print(self.Yobs)
         self.nXobs = self.Xobs.copy()
